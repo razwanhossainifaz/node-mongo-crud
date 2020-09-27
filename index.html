@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mongo Db</title>
+</head>
+<body>
+    <h1>Look Mom , I have a mongo database!!!!</h1>
+    <form action="/addProduct" method="post">
+        <input type="text" placeholder="name" name="name">
+        <input type="text" placeholder="price" name="price">
+        <input type="text" placeholder="quantity" name="quantity">
+        <button type="submit">Add product</button>
+    </form>
+    <div id="products"></div>
+    <div id="update"></div>
+    <script>
+        function loadAllProducts() {
+        fetch('/products')
+        .then(res => res.json())
+        .then(products => {
+            console.log(products)
+            const container = document.getElementsById('products');
+            container.innerHTML = '';
+            products.forEach(products => {
+                const p = document.createElement('p');
+                p.innerHTML = 
+                `<strong>${products.name}</strong> -- price: ${products.price} quantity: ${products.quantity}
+                <button onclick = "loadProduct('${products_id}')">Update</button>
+                <button onclick = "deleteProduct(event , '${products_id}')">Delete</button>
+                `;
+                container.appendChild(p)
+            });
+        })
+    }
+        loadAllProducts();
+
+        function loadProduct() {
+            fetch(`product/${id}`)
+            .then(res => res.json())
+            .then(data => {
+                const update = document.getElementById('update');
+                update.innerHTML = 
+                `
+                <h2>Update : ${data_id}</h2>
+                Price : <input type = "text" value = "${data.price}" id = "price">
+                <br>
+                Quantity : <input type = "text" value = "${data.quantity}" id = "price">
+                <br>
+                <button onclick = "updateProduct('${data_id}')">Submit</button>
+                `;
+            })
+        }
+
+        function updateProduct(id) {
+            const price = document.getElementById('price').value;
+            const quantity = document.getElementById('quantity').value;
+            const product = {id , price , quantity};
+
+            fetch(`/update/${id}` , {
+                method: "PATCH",
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(product)
+            })
+            .then(res => res.json())
+            .then(result => {
+                if(result) {
+                    loadAllProducts();
+                    document.getElementById('update').innerHTML = '';
+                }
+            })
+        }
+
+        function deleteProduct(event , id) {
+            fetch(`/delete/${id}` , {
+                method : "DELETE"
+            })
+            .then(res => res.json())
+            .then(result => {
+                if(result){
+                    event.target.parentNode.style.display = 'none'
+                }
+            })
+        }
+    </script>
+</body>
+</html>
